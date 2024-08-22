@@ -1,0 +1,16 @@
+.vs/
+packages/
+
+*.nupkg
+*.exe
+*.pfx
+*.suo
+*.user
+_ReSharper.*
+
+
+SerienStreamAPI/bin/
+SerienStreamAPI/obj/
+
+SerienStreamAPI.Tests/bin/
+SerienStreamAPI.Tests/obj/
