@@ -4,6 +4,8 @@ using SerienStreamAPI.Internal;
 using System.Text.RegularExpressions;
 using System.Text;
 using SerienStreamAPI.Exceptions;
+using System.Diagnostics;
+using SerienStreamAPI.Models;
 
 namespace SerienStreamAPI.Client;
 
@@ -20,6 +22,9 @@ public partial class DownloadClient
     
     [GeneratedRegex(@"/pass_md5/([^/]+/[^']+)")]
     private static partial Regex DoodstreamPassMd5Regex();
+    
+    [GeneratedRegex(@"frame=\s*(\d+)\s+fps=\s*([\d.]+)\s*q=\s*(-?[\d.]+)\s+size=\s*(\d+)\s*kB\s+time=\s*([\d:.]+)\s+bitrate=\s*([\d.]+)kbits/s(?:\s+[\w=]+)*\s+speed=\s*([\d.]+)x")]
+    private static partial Regex FFmpegEncodingProgressRegex();
 
 
     private static readonly Random random = new();
@@ -39,16 +44,20 @@ public partial class DownloadClient
     }
 
 
+    readonly string ffmpegLocation;
     readonly ILogger<DownloadClient>? logger;
 
     readonly RequestHelper requestHelper;
 
     public DownloadClient(
+        string ffmpegLocation,
+        bool ignoreCerficiateValidation = false,
         ILogger<DownloadClient>? logger = null)
     {
+        this.ffmpegLocation = ffmpegLocation;
         this.logger = logger;
 
-        this.requestHelper = new(false, logger);
+        this.requestHelper = new(ignoreCerficiateValidation, logger);
 
         logger?.LogInformation("[DownloadClient-.ctor] DownloadClient has been inizialized.");
     }
@@ -65,6 +74,43 @@ public partial class DownloadClient
         document.LoadHtml(webContent);
 
         return document.DocumentNode;
+    }
+
+    Process CreateEncoder(
+        string streamUrl,
+        string filePath,
+        (string key, string value)[]? headers = null,
+        DataReceivedEventHandler? onDataReceived = null)
+    {
+        logger?.LogInformation("[DownloadClient-CreateEncoder] Creating FFmpeg encoder...");
+        StringBuilder builder = new();
+
+        if (headers is not null)
+            builder.Append($"-headers \"{string.Join(@"\r\n", headers.Select(header => $"{header.key}: {header.value}"))}\" ");
+        builder.AppendJoin(' ', [
+             $"-i \"{streamUrl}\"",
+             "-v quiet",
+             "-stats",
+             "-y",
+             "-c copy",
+             $"\"{filePath}\""
+            ]);
+
+        Process processor = new()
+        {
+            StartInfo = new(ffmpegLocation)
+            {
+                Arguments = builder.ToString(),
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+            }
+        };
+        if (onDataReceived is not null)
+            processor.ErrorDataReceived += onDataReceived;
+
+        return processor;
     }
 
 
@@ -146,4 +192,62 @@ public partial class DownloadClient
         return root.SelectSingleNodeAttribute("//video[@id='player']/source", "src");
     }
 
+
+    public Task DownloadAsync(
+        string streamUrl,
+        string filePath,
+        (string key, string value)[]? headers = null,
+        IProgress<EncodingProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        logger?.LogInformation("[DownloadClient-DownloadAsync] Starting to download & encode stream...");
+
+        Process encoder = CreateEncoder(streamUrl, filePath, headers, progress is null ? null : new((s, e) =>
+        {
+            if (e.Data is null)
+                return;
+
+            Match match = FFmpegEncodingProgressRegex().Match(e.Data);
+            if (!match.Success)
+                return;
+
+            int framesProcessed = match.Groups[1].Value.ToInt32();
+            double fps = match.Groups[2].Value.ToDouble();
+            double quality = match.Groups[3].Value.ToDouble();
+            int outputFileSizeKb = match.Groups[4].Value.ToInt32();
+            TimeSpan timeElapsed = match.Groups[5].Value.ToTimeSpan();
+            double bitrateKbps = match.Groups[6].Value.ToDouble();
+            double speedMultiplier = match.Groups[7].Value.ToDouble();
+
+            progress.Report(new(
+                framesProcessed: framesProcessed,
+                fps: fps,
+                quality: quality,
+                outputFileSizeKb: outputFileSizeKb,
+                timeElapsed: timeElapsed,
+                bitrateKbps: bitrateKbps,
+                speedMultiplier: speedMultiplier));
+        }));
+
+        cancellationToken.Register(async () =>
+        {
+            try
+            {
+                encoder.Kill();
+                await Task.Delay(1000, CancellationToken.None);
+
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex, "[DownloadClient-OnDownloadCancellationTokenCanceled] Failed to kill encoder and delete file: {exception}", ex.Message);
+            }
+        });
+
+        encoder.Start();
+        encoder.BeginErrorReadLine();
+
+        return encoder.WaitForExitAsync(cancellationToken);
+    }
 }

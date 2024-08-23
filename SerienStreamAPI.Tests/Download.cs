@@ -3,9 +3,7 @@
 using Microsoft.Extensions.Logging;
 using NUnit.Framework.Internal;
 using SerienStreamAPI.Client;
-using System.Net.Http.Headers;
-using System.Net;
-using Newtonsoft.Json.Linq;
+using SerienStreamAPI.Models;
 
 namespace SerienStreamAPI.Tests;
 
@@ -17,13 +15,8 @@ public class Download
     [SetUp]
     public void Setup()
     {
-        ILoggerFactory factory = LoggerFactory.Create(builder =>
-        {
-            builder.AddConsole();
-        });
-
-        logger = factory.CreateLogger<DownloadClient>();
-        client = new(logger);
+        logger = TestData.CreateLogger<DownloadClient>();
+        client = new(TestData.FFmpegLocation, TestData.IgnoreCerficiateValidation, logger);
     }
 
 
@@ -81,5 +74,25 @@ public class Download
         Assert.That(result, Is.Not.Null);
 
         logger.LogObject(result);
+    }
+
+
+    [Test]
+    public void download_stream_to_file_path()
+    {
+        Assert.DoesNotThrowAsync(async () =>
+        {
+            await client.DownloadAsync(TestData.StreamUrl, TestData.FilePath, TestData.Headers, new Progress<EncodingProgress>(progress =>
+                logger.LogInformation("Progres:\n\tFramesProcessed: {framesProcessed}\n\tFps: {fps}\n\tQuality: {quality}\n\tOutputFileSizeKb: {outputFileSizeKb}\n\tTimeElapsed: {timeElapsed}\n\tBitrateKbps: {bitrateKbps}\n\tSpeedMultiplier: {speedMultiplier}",
+                    progress.FramesProcessed,
+                    progress.Fps,
+                    progress.Quality,
+                    progress.OutputFileSizeKb,
+                    progress.TimeElapsed,
+                    progress.BitrateKbps,
+                    progress.SpeedMultiplier)));
+        });
+
+        logger.LogInformation("Result:\n\tDownloaded video successfully.");
     }
 }

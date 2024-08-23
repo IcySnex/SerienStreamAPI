@@ -15,12 +15,7 @@ public class SerienStream
     [SetUp]
     public void Setup()
     {
-        ILoggerFactory factory = LoggerFactory.Create(builder =>
-        {
-            builder.AddConsole();
-        });
-
-        logger = factory.CreateLogger<SerienStreamClient>();
+        logger = TestData.CreateLogger<SerienStreamClient>();
         client = new(TestData.HostUrl, TestData.Site, TestData.IgnoreCerficiateValidation, logger);
     }
 

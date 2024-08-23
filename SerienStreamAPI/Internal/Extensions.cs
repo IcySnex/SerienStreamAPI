@@ -1,7 +1,7 @@
 ﻿using HtmlAgilityPack;
 using SerienStreamAPI.Enums;
 using SerienStreamAPI.Models;
-using System.Xml;
+using System.Globalization;
 
 namespace SerienStreamAPI.Internal;
 
@@ -18,12 +18,20 @@ internal static class Extensions
 
 
     public static int ToInt32(
-        this string text) =>
-        int.Parse(text);
-
-    public static int ToInt32(
         this bool boolean) =>
         boolean ? 1 : 0;
+
+    public static int ToInt32(
+        this string text) =>
+        int.Parse(text, NumberStyles.Integer, CultureInfo.InvariantCulture);
+    
+    public static double ToDouble(
+        this string text) =>
+        double.Parse(text, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+
+    public static TimeSpan ToTimeSpan(
+        this string text) =>
+        TimeSpan.ParseExact(text, @"hh\:mm\:ss\.ff", null);
 
     public static Hoster ToHoster(
         this string text) =>
