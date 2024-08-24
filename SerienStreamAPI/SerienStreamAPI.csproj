@@ -13,16 +13,27 @@
 		<Company />
 		<Description>API to search &amp; download series/anime from s.to/aniworld.to</Description>
 		<PackageProjectUrl>https://github.com/IcySnex/SerienStreamAPI</PackageProjectUrl>
-		<PackageReadmeFile>..\README.md</PackageReadmeFile>
-		<PackageLicenseFile>..\LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/IcySnex/SerienStreamAPI/tree/main</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>scraper;series;anime,serienstream;aniworld;downloading</PackageTags>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
-		<PackageReleaseNotes>- Inital Release</PackageReleaseNotes>		
+		<PackageReleaseNotes>- Inital Release</PackageReleaseNotes>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.64" />
