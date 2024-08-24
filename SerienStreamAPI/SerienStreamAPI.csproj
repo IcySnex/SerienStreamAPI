@@ -1,14 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+		<Version>1.0.0</Version>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<FileVersion>1.0.0</FileVersion>
 
-  <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.64" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
-  </ItemGroup>
+		<Title>SerienStream/AniWorld API</Title>
+		<Authors>IcySnex</Authors>
+		<Company />
+		<Description>API to search &amp; download series/anime from s.to/aniworld.to</Description>
+		<PackageProjectUrl>https://github.com/IcySnex/SerienStreamAPI</PackageProjectUrl>
+		<PackageReadmeFile>..\README.md</PackageReadmeFile>
+		<PackageLicenseFile>..\LICENSE</PackageLicenseFile>
+		<RepositoryUrl>https://github.com/IcySnex/SerienStreamAPI/tree/main</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>scraper;series;anime,serienstream;aniworld;downloading</PackageTags>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
+		<PackageReleaseNotes>- Inital Release</PackageReleaseNotes>		
+	</PropertyGroup>
 
+	<ItemGroup>
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.64" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+	</ItemGroup>
 </Project>
