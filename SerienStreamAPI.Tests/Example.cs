@@ -4,10 +4,7 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework.Internal;
 using SerienStreamAPI.Client;
 using SerienStreamAPI.Enums;
-using SerienStreamAPI.Exceptions;
 using SerienStreamAPI.Models;
-using System.Numerics;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SerienStreamAPI.Tests;
 
@@ -25,14 +22,17 @@ public class Example
             .FirstOrDefault();
 
     static string MakeSafe(
-        string text,
-        bool isDirectory = false)
+        string text)
     {
-        foreach (char c in isDirectory ? Path.GetInvalidPathChars() : Path.GetInvalidFileNameChars())
+        foreach (char c in Path.GetInvalidFileNameChars())
             text = text.Replace(c.ToString(), "");
 
         return text;
     }
+
+    static int ToInt32(
+        bool value) =>
+        value ? 1 : 0;
 
 
     ILogger<Example> logger;
@@ -56,26 +56,7 @@ public class Example
         Series series = await client.GetSeriesAsync(TestData.Title);
         logger.LogInformation("Found Series: {title} - {seasonsCount} Seasons, {moviesInfo} Movies", series.Title, series.SeasonsCount, series.HasMovies ? "Contains" : "No");
 
-        if (false) //series.HasMovies)
-        {
-            logger.LogInformation("  Starting to download all movies...");
-
-            string downloadDirectory = Path.Combine(TestData.DownloadDirectory, MakeSafe(series.Title), "Movies");
-            Directory.CreateDirectory(downloadDirectory);
-
-            Media[] movies = await client.GetMoviesAsync(TestData.Title);
-            foreach (Media movie in movies)
-            {
-                logger.LogInformation("    Preparing movie download: [{index}/{total}] {title}", movie.Number, movies.Length, movie.Title);
-                VideoDetails details = await client.GetMovieVideoInfoAsync(series.Title, movie.Number);
-
-                await DownloadMediaAsync(details, downloadDirectory);
-            }
-
-            logger.LogInformation("  Finished downloading all movies!");
-        }
-
-        for (int i = 1; i < series.SeasonsCount + 1; i++)
+        for (int i = ToInt32(!series.HasMovies); i < series.SeasonsCount + ToInt32(series.HasMovies); i++)
         {
             logger.LogInformation("  Starting to download season {number}...", i);
 
@@ -88,43 +69,35 @@ public class Example
                 logger.LogInformation("    Preparing episode download: [{index}/{total}] {title}", episode.Number, episodes.Length, episode.Title);
                 VideoDetails details = await client.GetEpisodeVideoInfoAsync(series.Title, episode.Number, i);
 
-                await DownloadMediaAsync(details, downloadDirectory);
+                VideoStream? bestStream = SelectDesiredVideoStream(details.Streams, TestData.DesiredAudioLanguage, TestData.DesiredSubtitleLanguage, TestData.DesiredHoster);
+                if (bestStream is null)
+                {
+                    logger.LogWarning("    Media video details do not contain any streams. Skipping...");
+                    return;
+                }
+
+                string? streamUrl = bestStream.Hoster switch
+                {
+                    Hoster.VOE => await downloadClient.GetVoeStreamUrlAsync(bestStream.VideoUrl),
+                    Hoster.Streamtape => await downloadClient.GetStreamtapeStreamUrlAsync(bestStream.VideoUrl),
+                    Hoster.Doodstream => await downloadClient.GetDoodstreamStreamUrlAsync(bestStream.VideoUrl),
+                    Hoster.Vidoza => await downloadClient.GetVidozaStreamUrlAsync(bestStream.VideoUrl),
+                    _ => null
+                };
+                if (streamUrl is null)
+                {
+                    logger.LogWarning("    Failed to get media stream url. Skipping...");
+                    return;
+                }
+
+                string fileName = $"{MakeSafe(series.Title).Replace(' ', '.')}.S{i:D2}E{details.Number:D2}.{bestStream.Language.Audio}-{bestStream.Hoster}.mp4";
+                
+                logger.LogInformation("    Starting media download: {fileName}", fileName);
+                await downloadClient.DownloadAsync(streamUrl, Path.Combine(downloadDirectory, fileName), null, new Progress<EncodingProgress>(progress =>
+                    logger.LogInformation("      Downloading media... Time: {timeElapsed}, Speed: {speed}x", progress.TimeElapsed.ToString(@"hh\:mm\:ss"), progress.SpeedMultiplier)));
             }
 
             logger.LogInformation("  Finished downloading season {number}!", i);
         }
-    }
-
-
-    async Task DownloadMediaAsync(
-        VideoDetails details,
-        string downloadDirectory)
-    {
-        VideoStream? bestStream = SelectDesiredVideoStream(details.Streams, TestData.DesiredAudioLanguage, TestData.DesiredSubtitleLanguage, TestData.DesiredHoster);
-        if (bestStream is null)
-        {
-            logger.LogWarning("    Media video details do not contain any streams. Skipping...");
-            return;
-        }
-
-        string? streamUrl = bestStream.Hoster switch
-        {
-            Hoster.VOE => await downloadClient.GetVoeStreamUrlAsync(bestStream.VideoUrl),
-            Hoster.Streamtape => await downloadClient.GetStreamtapeStreamUrlAsync(bestStream.VideoUrl),
-            //Hoster.Doodstream => await downloadClient.GetDoodstreamStreamUrlAsync(bestStream.VideoUrl),
-            Hoster.Vidoza => await downloadClient.GetVidozaStreamUrlAsync(bestStream.VideoUrl),
-            _ => null
-        };
-        if (streamUrl is null)
-        {
-            logger.LogWarning("    Failed to get media stream url. Skipping...");
-            return;
-        }
-
-        logger.LogWarning("    Starting media download: Audio: {audioLanguage}, Subtitle: {subtitleLanguage}, Hoster: {hoster}", bestStream.Language.Audio, bestStream.Language.Subtitle, bestStream.Hoster);
-        string filePath = Path.Combine(downloadDirectory, $"{details.Number:D2} {MakeSafe(string.IsNullOrEmpty(details.Title) ? details.OriginalTitle : details.Title)}.mp4");
-        
-        await downloadClient.DownloadAsync(streamUrl, filePath, null, new Progress<EncodingProgress>(progress =>
-            logger.LogInformation("      Downloading media... {timeElapsed}", progress.TimeElapsed)));
     }
 }
