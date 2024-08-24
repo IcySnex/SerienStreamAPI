@@ -4,16 +4,11 @@ using SerienStreamAPI.Enums;
 using SerienStreamAPI.Exceptions;
 using SerienStreamAPI.Internal;
 using SerienStreamAPI.Models;
-using System.Text.RegularExpressions;
 
 namespace SerienStreamAPI.Client;
 
-public partial class SerienStreamClient
+public class SerienStreamClient
 {
-    [GeneratedRegex(@"window\.location\.href\s*=\s*'([^']*)'")]
-    private static partial Regex VideoUrlRedirectRegex();
-
-
     readonly string hostUrl;
     readonly string site;
     readonly ILogger<SerienStreamClient>? logger;
@@ -143,11 +138,12 @@ public partial class SerienStreamClient
             node.GetAttributeValue("src").ToMediaLanguage()));
 
         return new VideoDetails(
+            number: root.SelectSingleNodeText("//ul/li/a[@class='active' and @data-episode-id]").ToInt32(),
             title: root.SelectSingleNodeText("//div[@class='hosterSiteTitle']/h2/span[@class='episodeGermanTitle']"),
             originalTitle: root.SelectSingleNodeText("//div[@class='hosterSiteTitle']/h2/small[@class='episodeEnglishTitle']"),
             description: root.SelectSingleNodeText("//div[@class='hosterSiteTitle']/p[@itemprop='description']"),
             streams: root.Select("//ul[@class='row']/li", node => new VideoStream(
-                redirectId: node.SelectSingleNodeAttribute(".//a[@class='watchEpisode']", "href")[9..],
+                videoUrl: hostUrl.AddRelativePath(node.SelectSingleNodeAttribute(".//a[@class='watchEpisode']", "href")),
                 hoster: node.SelectSingleNodeText(".//h4").ToHoster(),
                 language: languageMapping.GetValueOrDefault(node.GetAttributeValue("data-lang-key").ToInt32(), new(Language.Unknown, null)))));
     }
@@ -157,21 +153,4 @@ public partial class SerienStreamClient
         int number,
         CancellationToken cancellationToken = default) =>
         GetEpisodeVideoInfoAsync(title, number, 0, cancellationToken);
-
-
-    public async Task<string> GetVideoUrlAsync(
-        string redirectId,
-        CancellationToken cancellationToken = default)
-    {
-        // Get web content
-        logger?.LogInformation("[SerienStreamClient-GetVideoUrlAsync] Getting video redirect script: {redirectId}...", redirectId);
-        string webContent = await requestHelper.GetAndValidateAsync(hostUrl, $"/redirect/{redirectId}", null, cancellationToken);
-
-        // Extract video url from redirect
-        Match match = VideoUrlRedirectRegex().Match(webContent);
-        if (!match.Success)
-            throw new UrlExtractionFailedException(redirectId);
-
-        return match.Groups[1].Value;
-    }
 }

@@ -11,6 +11,9 @@ namespace SerienStreamAPI.Client;
 
 public partial class DownloadClient
 {
+    [GeneratedRegex(@"window\.location\.href\s*=\s*'([^']*)'")]
+    private static partial Regex VoeVideoRedirectRegex();
+
     [GeneratedRegex(@"'hls':\s*'(.*?)'")]
     private static partial Regex VoeStreamUrlRegex();
 
@@ -118,19 +121,26 @@ public partial class DownloadClient
         string videoUrl,
         CancellationToken cancellationToken = default)
     {
+        string webContent = await requestHelper.GetAndValidateAsync(videoUrl, null, null, cancellationToken);
+
+        // Extract video url from redirect
+        Match redirectMatch = VoeVideoRedirectRegex().Match(webContent);
+        if (!redirectMatch.Success)
+            throw new UrlExtractionFailedException(videoUrl);
+
         // Get HTML doucment
-        HtmlNode root = await GetHtmlRootAsync(videoUrl, cancellationToken);
+        HtmlNode root = await GetHtmlRootAsync(redirectMatch.Groups[1].Value, cancellationToken);
 
         // Extract stream url from video
-        logger?.LogInformation("[DownloadClient-GetVoeStreamUrlAsync] Extracting voe stream url from video: {videoUrl}...", videoUrl);
+        logger?.LogInformation("[DownloadClient-GetVoeStreamUrlAsync] Extracting voe stream url from video: {videoUrl}...", redirectMatch.Groups[1].Value);
 
         string js = root.SelectSingleNodeText("//script[contains(text(), 'var sources')]");
 
-        Match match = VoeStreamUrlRegex().Match(js);
-        if (!match.Success)
+        Match streamUrlMatch = VoeStreamUrlRegex().Match(js);
+        if (!streamUrlMatch.Success)
             throw new UrlExtractionFailedException(videoUrl);
 
-        byte[] encodedData = Convert.FromBase64String(match.Groups[1].Value);
+        byte[] encodedData = Convert.FromBase64String(streamUrlMatch.Groups[1].Value);
         return Encoding.UTF8.GetString(encodedData);
     }
 

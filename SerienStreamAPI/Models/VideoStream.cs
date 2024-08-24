@@ -3,13 +3,13 @@
 namespace SerienStreamAPI.Models;
 
 public class VideoStream(
-    string redirectId,
+    string videoUrl,
     Hoster hoster,
     MediaLanguage language)
 {
-    public string RedirectId { get; set; } = redirectId;
+    public string VideoUrl { get; set; } = videoUrl;
 
-    public Hoster Hosters { get; set; } = hoster;
+    public Hoster Hoster { get; set; } = hoster;
 
-    public MediaLanguage Languages { get; set; } = language;
+    public MediaLanguage Language { get; set; } = language;
 }

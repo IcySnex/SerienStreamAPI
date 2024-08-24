@@ -9,14 +9,15 @@ namespace SerienStreamAPI.Tests;
 
 public class Download
 {
-    ILogger<DownloadClient> logger;
+    ILogger<Download> logger;
+
     DownloadClient client;
 
     [SetUp]
     public void Setup()
     {
-        logger = TestData.CreateLogger<DownloadClient>();
-        client = new(TestData.FFmpegLocation, TestData.IgnoreCerficiateValidation, logger);
+        logger = TestData.CreateLogger<Download>();
+        client = new(TestData.FFmpegLocation, TestData.IgnoreCerficiateValidation, TestData.CreateLogger<DownloadClient>());
     }
 
 
@@ -84,13 +85,7 @@ public class Download
         {
             await client.DownloadAsync(TestData.StreamUrl, TestData.FilePath, TestData.Headers, new Progress<EncodingProgress>(progress =>
                 logger.LogInformation("Progres:\n\tFramesProcessed: {framesProcessed}\n\tFps: {fps}\n\tQuality: {quality}\n\tOutputFileSizeKb: {outputFileSizeKb}\n\tTimeElapsed: {timeElapsed}\n\tBitrateKbps: {bitrateKbps}\n\tSpeedMultiplier: {speedMultiplier}",
-                    progress.FramesProcessed,
-                    progress.Fps,
-                    progress.Quality,
-                    progress.OutputFileSizeKb,
-                    progress.TimeElapsed,
-                    progress.BitrateKbps,
-                    progress.SpeedMultiplier)));
+                    progress.FramesProcessed, progress.Fps, progress.Quality, progress.OutputFileSizeKb, progress.TimeElapsed, progress.BitrateKbps, progress.SpeedMultiplier)));
         });
 
         logger.LogInformation("Result:\n\tDownloaded video successfully.");

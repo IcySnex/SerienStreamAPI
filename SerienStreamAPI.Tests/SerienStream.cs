@@ -9,14 +9,15 @@ namespace SerienStreamAPI.Tests;
 
 public class SerienStream
 {
-    ILogger<SerienStreamClient> logger;
+    ILogger<SerienStream> logger;
+
     SerienStreamClient client;
 
     [SetUp]
     public void Setup()
     {
-        logger = TestData.CreateLogger<SerienStreamClient>();
-        client = new(TestData.HostUrl, TestData.Site, TestData.IgnoreCerficiateValidation, logger);
+        logger = TestData.CreateLogger<SerienStream>();
+        client = new(TestData.HostUrl, TestData.Site, TestData.IgnoreCerficiateValidation, TestData.CreateLogger<SerienStreamClient>());
     }
 
 
@@ -87,21 +88,6 @@ public class SerienStream
         Assert.DoesNotThrowAsync(async () =>
         {
             result = await client.GetMovieVideoInfoAsync(TestData.Title, TestData.Movie);
-        });
-        Assert.That(result, Is.Not.Null);
-
-        logger.LogObject(result);
-    }
-
-
-    [Test]
-    public void get_video_url_from_any_redirect_id()
-    {
-        string? result = null;
-
-        Assert.DoesNotThrowAsync(async () =>
-        {
-            result = await client.GetVideoUrlAsync(TestData.RedirectId);
         });
         Assert.That(result, Is.Not.Null);
 

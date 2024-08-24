@@ -14,7 +14,7 @@ internal static class Extensions
 
     public static string ToRelativePath(
         this string text) =>
-        text.ToLower().Replace(' ', '-');
+        text.ToLower().Replace(":", "").Replace(' ', '-');
 
 
     public static int ToInt32(
