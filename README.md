@@ -67,5 +67,10 @@ await downloadClient.DownloadAsync(streamUrl, "video.mp4", null, new Progress<En
 
 ---
 
+## Questions/Issues
+If you have any questions about this library or questions on how to use it. Please [open a new issue](https://github.com/IcySnex/SerienStreamAPI/issues) and I will quickly respond. For more usage examples you can look at the [Tests](https://github.com/IcySnex/SerienStreamAPI/tree/main/SerienStreamAPI.Tests)
+
+---
+
 ## Legal Notice
 This library is for educational purposes only. Downloading or accessing copyrighted content without permission may be illegal in your country. I am not responsible for any misuse or legal consequences. **Use at your own risk**.
