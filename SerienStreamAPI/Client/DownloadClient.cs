@@ -148,6 +148,13 @@ public partial class DownloadClient
         string videoUrl,
         CancellationToken cancellationToken = default)
     {
+        // Extract url from redirect
+        if (!videoUrl.Contains("/e/"))
+        { 
+            HtmlNode newRoot = await GetHtmlRootAsync(videoUrl, cancellationToken);
+            videoUrl = newRoot.SelectSingleNodeAttribute("//meta[@name='og:url']", "content");
+        }
+
         // Get HTML doucment
         HtmlNode root = await GetHtmlRootAsync(videoUrl.Replace("/e/", "/v/"), cancellationToken);
 
