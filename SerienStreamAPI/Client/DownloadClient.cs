@@ -6,6 +6,8 @@ using System.Text;
 using SerienStreamAPI.Exceptions;
 using System.Diagnostics;
 using SerienStreamAPI.Models;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace SerienStreamAPI.Client;
 
@@ -16,6 +18,9 @@ public partial class DownloadClient
 
     [GeneratedRegex(@"'hls':\s*'(.*?)'")]
     private static partial Regex VoeStreamUrlRegex();
+    
+    [GeneratedRegex(@"let\s+\w+\s*=\s*'(.*?)';")]
+    private static partial Regex VoeStreamDataRegex();
 
     [GeneratedRegex("document\\.getElementById\\('norobotlink'\\)\\.innerHTML = (.+);")]
     private static partial Regex StreamtapeNoRobotRegex();
@@ -123,32 +128,56 @@ public partial class DownloadClient
     {
         string webContent = await requestHelper.GetAndValidateAsync(videoUrl, null, null, cancellationToken);
 
+        HtmlNode root;
+
         // Extract video url from redirect
         Match redirectMatch = VoeVideoRedirectRegex().Match(webContent);
-        if (!redirectMatch.Success)
-            throw new UrlExtractionFailedException(videoUrl);
+        if (redirectMatch.Success)
+        {
+            root = await GetHtmlRootAsync(redirectMatch.Groups[1].Value, cancellationToken);
+        }
+        else
+        {
+            HtmlDocument document = new();
+            document.LoadHtml(webContent);
 
-        // Get HTML doucment
-        HtmlNode root = await GetHtmlRootAsync(redirectMatch.Groups[1].Value, cancellationToken);
+            root = document.DocumentNode;
+        }    
 
         // Extract stream url from video
-        logger?.LogInformation("[DownloadClient-GetVoeStreamUrlAsync] Extracting voe stream url from video: {videoUrl}...", redirectMatch.Groups[1].Value);
+        logger?.LogInformation("[DownloadClient-GetVoeStreamUrlAsync] Extracting VOE stream url from video: {videoUrl}...", redirectMatch.Groups[1].Value);
 
-        string js = root.SelectSingleNodeText("//script[contains(text(), 'var sources')]");
+        string streamUrlJs = root.SelectSingleNodeText("//script[contains(text(), 'var sources')]");
+        Match streamUrlMatch = VoeStreamUrlRegex().Match(streamUrlJs);
+        if (streamUrlMatch.Success)
+        {
+            byte[] encodedData = Convert.FromBase64String(streamUrlMatch.Groups[1].Value);
+            return Encoding.UTF8.GetString(encodedData);
+        }
 
-        Match streamUrlMatch = VoeStreamUrlRegex().Match(js);
-        if (!streamUrlMatch.Success)
-            throw new UrlExtractionFailedException(videoUrl);
+        // Extract stream data from video
+        logger?.LogInformation("[DownloadClient-GetVoeStreamUrlAsync] Extracting VOE stream url failed. Extracting VOE stream data from video now");
 
-        byte[] encodedData = Convert.FromBase64String(streamUrlMatch.Groups[1].Value);
-        return Encoding.UTF8.GetString(encodedData);
+        string streamDataJs = root.SelectSingleNodeText("//script[contains(text(), 'let f62aad852c654bf8c9737da67c45630c7dec5019')]");
+        Match streamDataMatch = VoeStreamDataRegex().Match(streamDataJs);
+        if (streamDataMatch.Success)
+        {
+            byte[] encodedData = Convert.FromBase64String(streamDataMatch.Groups[1].Value);
+            IEnumerable<char> json = Encoding.UTF8.GetString(encodedData).Reverse();
+
+            string? streamUrl = JsonDocument.Parse(json.ToArray()).RootElement.GetProperty("file").GetString();
+            if (streamUrl is not null)
+                return streamUrl;
+        }
+
+        throw new UrlExtractionFailedException(videoUrl);
     }
 
     public async Task<string> GetStreamtapeStreamUrlAsync(
         string videoUrl,
         CancellationToken cancellationToken = default)
     {
-        // Extract url from redirect
+        // Extract video url from redirect
         if (!videoUrl.Contains("/e/"))
         { 
             HtmlNode newRoot = await GetHtmlRootAsync(videoUrl, cancellationToken);
