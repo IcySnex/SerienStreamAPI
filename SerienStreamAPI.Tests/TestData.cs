@@ -39,16 +39,16 @@ public static class TestData
         logger.Log(level, "\n{message}:\n\t{readableResults}", message, JsonSerializer.Serialize(@object, serializerOptions));
 
 
-    public static readonly string HostUrl = "https://aniworld.to/";
+    public static readonly string HostUrl = "https://186.2.175.5/";
 
-    public static readonly string Site = "anime";
+    public static readonly string Site = "serie";
 
     public static readonly bool IgnoreCerficiateValidation = true;
 
     public static readonly string FFmpegLocation = @"C:\Program Files\FFmpeg\FFmpeg.exe";
 
 
-    public static readonly string Title = "tonikawa-over-the-moon-for-you";
+    public static readonly string Title = "1000 wege ins gras zu beissen";
 
     public static readonly int Season = 1;
 
@@ -60,7 +60,7 @@ public static class TestData
     public static readonly string RedirectId = "2531389";
 
 
-    public static readonly string VoeVideoUrl = "https://186.2.175.5/redirect/14141709";
+    public static readonly string VoeVideoUrl = "https://aniworld.to/redirect/2275401";
 
     public static readonly string StreamtapeVideoUrl = "https://streamtape.com/v/wzP4qXZRvrIe21";
 

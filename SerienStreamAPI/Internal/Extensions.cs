@@ -2,6 +2,7 @@
 using SerienStreamAPI.Enums;
 using SerienStreamAPI.Models;
 using System.Globalization;
+using System.Text;
 
 namespace SerienStreamAPI.Internal;
 
@@ -12,9 +13,44 @@ internal static class Extensions
         string relativePath) =>
         $"{baseUrl.Trim('/')}/{relativePath.Trim('/')}";
 
+
+    static readonly HashSet<char> replacements = new()
+    {
+        ':', ',' , '(', ')', '~', '.', '&', '\'', '+', '!', 'ü', 'ä', 'ö',
+    };
+
     public static string ToRelativePath(
-        this string text) =>
-        text.ToLower().Replace(":", "").Replace(' ', '-');
+        this string text)
+    {
+        StringBuilder builder = new();
+        bool lastWasDash = false;
+
+        foreach (char c in text.ToLower())
+        {
+            if (replacements.Contains(c))
+                continue;
+            else if (c == ' ')
+            {
+                if (!lastWasDash)
+                {
+                    builder.Append('-');
+                    lastWasDash = true;
+                }
+                continue;
+            }
+            else if (c == 'ß')
+            {
+                builder.Append("ss");
+                lastWasDash = false;
+                continue;
+            }
+
+            builder.Append(c);
+            lastWasDash = false;
+        }
+
+        return builder.ToString();
+    }
 
 
     public static int ToInt32(

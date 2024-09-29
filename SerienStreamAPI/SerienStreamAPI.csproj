@@ -4,9 +4,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>1.0.2</Version>
-		<AssemblyVersion>1.0.2</AssemblyVersion>
-		<FileVersion>1.0.2</FileVersion>
+		<Version>1.0.3</Version>
+		<AssemblyVersion>1.0.3</AssemblyVersion>
+		<FileVersion>1.0.3</FileVersion>
 
 		<Title>SerienStream/AniWorld API</Title>
 		<Authors>IcySnex</Authors>
@@ -21,7 +21,7 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
-		<PackageReleaseNotes>- Fixed not being able to get StreamUrl from VOE</PackageReleaseNotes>
+		<PackageReleaseNotes>- Fixed algorithm for retrieving relative series path from name</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
