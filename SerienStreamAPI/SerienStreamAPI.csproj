@@ -22,8 +22,8 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
 		<PackageReleaseNotes>
-			- Fixed "Moved Permamently" error for specific s.to hosts
-			- Updated DownloaderClient progress callback for newer FFmpeg versions
+			- Fixed "Moved Permanently" error for specific s.to hosts
+			- Updated DownloadClient progress callback for newer FFmpeg versions
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

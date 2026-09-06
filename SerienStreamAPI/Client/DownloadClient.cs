@@ -47,10 +47,10 @@ public partial class DownloadClient
     private static readonly string randomCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     private static string RandomString(
-        int lenght = 10)
+        int length = 10)
     {
         string result = "";
-        for (int i = 0; i < lenght; i++)
+        for (int i = 0; i < length; i++)
         {
             int index = random.Next(randomCharacters.Length);
             result += randomCharacters[index];
@@ -67,15 +67,15 @@ public partial class DownloadClient
 
     public DownloadClient(
         string ffmpegLocation,
-        bool ignoreCerficiateValidation = false,
+        bool ignoreCertificateValidation = false,
         ILogger<DownloadClient>? logger = null)
     {
         this.ffmpegLocation = ffmpegLocation;
         this.logger = logger;
 
-        this.requestHelper = new(ignoreCerficiateValidation, logger);
+        this.requestHelper = new(ignoreCertificateValidation, logger);
 
-        logger?.LogInformation("[DownloadClient-.ctor] DownloadClient has been inizialized.");
+        logger?.LogInformation("[DownloadClient-.ctor] DownloadClient has been initialized.");
     }
 
 
@@ -209,7 +209,7 @@ public partial class DownloadClient
             videoUrl = newRoot.SelectSingleNodeAttribute("//meta[@name='og:url']", "content");
         }
 
-        // Get HTML doucment
+        // Get HTML document
         HtmlNode root = await GetHtmlRootAsync(videoUrl.Replace("/e/", "/v/"), cancellationToken);
 
         // Extract stream url from video
@@ -231,7 +231,7 @@ public partial class DownloadClient
         string videoUrl,
         CancellationToken cancellationToken = default)
     {
-        // Get HTML doucment
+        // Get HTML document
         HtmlNode root = await GetHtmlRootAsync(videoUrl, cancellationToken);
 
         // Extract stream url from video
@@ -254,7 +254,7 @@ public partial class DownloadClient
         string videoUrl,
         CancellationToken cancellationToken = default)
     {
-        // Get HTML doucment
+        // Get HTML document
         HtmlNode root = await GetHtmlRootAsync(videoUrl, cancellationToken);
 
         // Extract stream url from video

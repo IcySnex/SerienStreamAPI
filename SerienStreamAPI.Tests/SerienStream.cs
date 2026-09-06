@@ -17,7 +17,7 @@ public class SerienStream
     public void Setup()
     {
         logger = TestData.CreateLogger<SerienStream>();
-        client = new(TestData.HostUrl, TestData.Site, TestData.IgnoreCerficiateValidation, TestData.CreateLogger<SerienStreamClient>());
+        client = new(TestData.HostUrl, TestData.Site, TestData.IgnoreCertificateValidation, TestData.CreateLogger<SerienStreamClient>());
     }
 
 

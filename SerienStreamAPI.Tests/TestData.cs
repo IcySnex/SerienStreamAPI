@@ -45,7 +45,7 @@ public static class TestData
 
     public static readonly string Site = "serie";
 
-    public static readonly bool IgnoreCerficiateValidation = true;
+    public static readonly bool IgnoreCertificateValidation = true;
 
     public static readonly string FFmpegLocation = @"ffmpeg";
 
@@ -75,7 +75,7 @@ public static class TestData
         
     public static readonly string FilePath = @$"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/test.mp4";
 
-    public static readonly (string key, string value)[]? Headers = [("Referer", DoodstreamVideoUrl)]; //[("Referer", DoodstreamVideoUrl)]; // Header requirered when downloading stream from doodstream
+    public static readonly (string key, string value)[]? Headers = [("Referer", DoodstreamVideoUrl)]; //[("Referer", DoodstreamVideoUrl)]; // Header required when downloading stream from doodstream
 
 
     public static readonly string DownloadDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);

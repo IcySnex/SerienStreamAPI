@@ -7,13 +7,13 @@ This API works by scraping the HTML data of SerienStream/AniWorld and then parsi
 ---
 
 ## Setup
-Setting up is pretty easy. Just create a new instance of `SerienStreamClient` with the given hostUrl (e.g. https://s.to/ or https://aniworld.to/) and "site" (for SerienStream it's "serie", for AniWorld its "anime"). If the host url is marked as "unsafe" you can set "ignoreCerficiateValidation" to true which will bypass SSL certificate verification. If you aim to download videos as well, you will have to create an instance of `DownloadClient`.
+Setting up is pretty easy. Just create a new instance of `SerienStreamClient` with the given hostUrl (e.g. https://s.to/ or https://aniworld.to/) and "site" (for SerienStream it's "serie", for AniWorld it's "anime"). If the host url is marked as "unsafe" you can set "ignoreCertificateValidation" to true which will bypass SSL certificate verification. If you aim to download videos as well, you will have to create an instance of `DownloadClient`.
 ```cs
 // Create a new SerienStreamClient
-SerienStreamClient client = new(hostUrl: "https://aniworld.to/", site: "anime", ignoreCerficiateValidation: false, logger: null);
+SerienStreamClient client = new(hostUrl: "https://aniworld.to/", site: "anime", ignoreCertificateValidation: false, logger: null);
 
 // Create a new DownloadClient
-DownloadClient downloadClient = new(ffmpegLocation: "ffmpeg.exe", ignoreCerficiateValidation: false, logger: null);
+DownloadClient downloadClient = new(ffmpegLocation: "ffmpeg.exe", ignoreCertificateValidation: false, logger: null);
 ```
 
 ## Searching

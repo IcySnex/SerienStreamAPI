@@ -18,16 +18,16 @@ public class SerienStreamClient
     public SerienStreamClient(
         string hostUrl,
         string site,
-        bool ignoreCertificiateValidation = false,
+        bool ignoreCertificateValidation = false,
         ILogger<SerienStreamClient>? logger = null)
     {
         this.hostUrl = hostUrl;
         this.site = site;
         this.logger = logger;
 
-        this.requestHelper = new(ignoreCertificiateValidation, logger);
+        this.requestHelper = new(ignoreCertificateValidation, logger);
 
-        logger?.LogInformation("[SerienStreamClient-.ctor] SerienStreamClient has been inizialized.");
+        logger?.LogInformation("[SerienStreamClient-.ctor] SerienStreamClient has been initialized.");
     }
 
 
@@ -49,7 +49,7 @@ public class SerienStreamClient
         string title,
         CancellationToken cancellationToken = default)
     {
-        // Get HTML doucment
+        // Get HTML document
         HtmlNode root = await GetHtmlRootAsync($"{site}/{title.ToRelativePath()}", cancellationToken);
 
         if (root.Any("//div[contains(@class, 'messageAlert danger')]"))
@@ -85,7 +85,7 @@ public class SerienStreamClient
         int season,
         CancellationToken cancellationToken = default)
     {
-        // Get HTML doucment
+        // Get HTML document
         HtmlNode root = await GetHtmlRootAsync($"{site}/{title.ToRelativePath()}/staffel-{season}", cancellationToken);
 
         if (root.ChildNodes.Count == 0)
@@ -116,7 +116,7 @@ public class SerienStreamClient
         int season,
         CancellationToken cancellationToken = default)
     {
-        // Get HTML doucment
+        // Get HTML document
         HtmlNode root = await GetHtmlRootAsync($"{site}/{title.ToRelativePath()}/staffel-{season}/episode-{number}", cancellationToken);
 
         // Parse HTML document into series info

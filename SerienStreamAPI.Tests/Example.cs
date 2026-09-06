@@ -45,8 +45,8 @@ public class Example
     {
         logger = TestData.CreateLogger<Example>();
 
-        client = new(TestData.HostUrl, TestData.Site, TestData.IgnoreCerficiateValidation);
-        downloadClient = new(TestData.FFmpegLocation, TestData.IgnoreCerficiateValidation);
+        client = new(TestData.HostUrl, TestData.Site, TestData.IgnoreCertificateValidation);
+        downloadClient = new(TestData.FFmpegLocation, TestData.IgnoreCertificateValidation);
     }
 
 
