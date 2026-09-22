@@ -76,6 +76,8 @@ public class SerienStream
             result = await client.GetEpisodeVideoInfoAsync(TestData.Title, TestData.Episode, TestData.Season);
         });
         Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Number, Is.EqualTo(TestData.Episode));
+        Assert.That(result.Season, Is.EqualTo(TestData.Season));
 
         logger.LogObject(result);
     }

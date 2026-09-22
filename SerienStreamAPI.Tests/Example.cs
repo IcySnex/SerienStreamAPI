@@ -56,7 +56,7 @@ public class Example
         Series series = await client.GetSeriesAsync(TestData.Title);
         logger.LogInformation("Found Series: {title} - {seasonsCount} Seasons, {moviesInfo} Movies", series.Title, series.SeasonsCount, series.HasMovies ? "Contains" : "No");
 
-        for (int i = ToInt32(!series.HasMovies); i < series.SeasonsCount + ToInt32(series.HasMovies); i++)
+        for (int i = ToInt32(!series.HasMovies); i <= series.SeasonsCount; i++)
         {
             logger.LogInformation("  Starting to download season {number}...", i);
 
@@ -73,7 +73,7 @@ public class Example
                 if (bestStream is null)
                 {
                     logger.LogWarning("    Media video details do not contain any streams. Skipping...");
-                    return;
+                    continue;
                 }
 
                 string? streamUrl = bestStream.Hoster switch
@@ -87,7 +87,7 @@ public class Example
                 if (streamUrl is null)
                 {
                     logger.LogWarning("    Failed to get media stream url. Skipping...");
-                    return;
+                    continue;
                 }
 
                 string fileName = $"{MakeSafe(series.Title).Replace(' ', '.')}.S{i:D2}E{details.Number:D2}.{bestStream.Language.Audio}-{bestStream.Hoster}.mp4";

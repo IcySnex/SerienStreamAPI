@@ -59,13 +59,15 @@ public class SerienStreamClient
         logger?.LogInformation("[SerienStreamClient-GetSeriesAsync] Parsing HTML document into series info: {title}...", title);
 
         string endYearText = root.SelectSingleNodeText("//p[contains(@class,'text-muted')]/span[1]");
+        if (string.IsNullOrWhiteSpace(endYearText))
+            endYearText = root.SelectSingleNodeText("//p[contains(@class,'text-muted')]/a[2]");
 
         return new Series(
             title: root.SelectSingleNodeText("//div[contains(@class,'row')]//h1"),
             description: root.SelectSingleNodeText("//div[contains(@class,'series-description')]//span[@class='description-text']"),
             bannerUrl: hostUrl.AddRelativePath(root.SelectSingleNodeAttribute("//div[contains(@class,'col-12') and contains(@class,'col-md-9')]//picture//img", "data-src")),
             yearStart: root.SelectSingleNodeText("//p[contains(@class,'text-muted')]/a[1]").ToInt32(),
-            yearEnd: endYearText == "NA" ? null : endYearText.ToInt32(),
+            yearEnd: int.TryParse(endYearText, out int endYear) ? endYear : null,
             directors: root.Select("//li[strong[contains(text(),'Regisseur')]]//a", Extensions.GetInnerText),
             actors: root.Select("//li[strong[contains(text(),'Besetzung')]]//a", Extensions.GetInnerText),
             creators: root.Select("//li[strong[contains(text(),'Produzent')]]//a", Extensions.GetInnerText),
@@ -127,7 +129,7 @@ public class SerienStreamClient
         
         return new VideoDetails(
             number: currentInfo.Match(@"E(\d+)", 1).ToInt32(),
-            season: currentInfo.Contains("S00") ? null : currentInfo.Match(@"E(\d+)", 1).ToInt32(),
+            season: currentInfo.Contains("S00") ? null : currentInfo.Match(@"S(\d+)", 1).ToInt32(),
             title: fullTitle.Match(@"(.*?)(?:\s*\(([^()]*)\))?\s*$", 1),
             originalTitle: fullTitle.Match(@"(.*?)(?:\s*\(([^()]*)\))?\s*$", 2),
             description: root.SelectSingleNodeText("//div[starts-with(@id,'desc-')]/div"),
