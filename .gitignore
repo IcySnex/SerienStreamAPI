@@ -8,6 +8,7 @@ packages/
 *.suo
 *.user
 _ReSharper.*
+.DS_Store
 
 
 SerienStreamAPI/bin/

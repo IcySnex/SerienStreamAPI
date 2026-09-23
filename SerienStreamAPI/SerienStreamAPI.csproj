@@ -4,9 +4,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>1.1.1</Version>
-		<AssemblyVersion>1.1.1</AssemblyVersion>
-		<FileVersion>1.1.1</FileVersion>
+		<Version>1.1.2</Version>
+		<AssemblyVersion>1.1.2</AssemblyVersion>
+		<FileVersion>1.1.2</FileVersion>
 
 		<Title>SerienStream/AniWorld API</Title>
 		<Authors>IcySnex</Authors>
@@ -22,8 +22,8 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
 		<PackageReleaseNotes>
-			- Fixed "Moved Permanently" error for specific s.to hosts
-			- Updated DownloadClient progress callback for newer FFmpeg versions
+			- Fixed release year and season count parsing when getting series
+			- Updated dependencies
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
@@ -39,7 +39,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
 	</ItemGroup>
 </Project>
